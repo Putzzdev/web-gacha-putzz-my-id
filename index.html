@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>GACHA AKUN • FreeFire Config</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; }
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Quicksand', sans-serif;
+            position: relative;
+            overflow-x: hidden;
+        }
+        .auth-screen {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            z-index: 300;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .auth-card {
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 30px;
+            padding: 2rem;
+            width: 90%;
+            max-width: 380px;
+            box-shadow: 0 25px 45px rgba(0,0,0,0.2);
+            text-align: center;
+        }
+        .auth-card h2 { color: #4a5568; margin-bottom: 1.5rem; font-size: 1.8rem; }
+        .auth-input {
+            width: 100%; padding: 14px; margin-bottom: 1rem; background: #f7fafc;
+            border: 2px solid #e2e8f0; border-radius: 15px; color: #2d3748;
+            text-align: center; font-size: 1rem; transition: 0.3s;
+        }
+        .auth-input:focus { outline: none; border-color: #667eea; }
+        .auth-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2); border: none; padding: 14px;
+            border-radius: 15px; font-weight: bold; width: 100%; cursor: pointer;
+            margin-top: 0.5rem; color: white; font-size: 1rem; transition: 0.3s;
+        }
+        .auth-btn:hover { transform: scale(1.02); opacity: 0.9; }
+        .switch-text { color: #718096; margin-top: 1rem; font-size: 0.8rem; }
+        .switch-link { color: #667eea; cursor: pointer; font-weight: bold; }
+        .error-msg { color: #e53e3e; margin-top: 0.8rem; font-size: 0.8rem; padding: 8px; background: #fff5f5; border-radius: 10px; display: none; }
+        .success-msg { color: #38a169; margin-top: 0.8rem; font-size: 0.8rem; padding: 8px; background: #f0fff4; border-radius: 10px; display: none; }
+        .container { max-width: 500px; margin: 0 auto; padding: 2rem 1rem; position: relative; }
+        .settings-btn {
+            position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.5);
+            border-radius: 30px; padding: 8px 15px; color: white; cursor: pointer;
+            font-size: 0.8rem; z-index: 10; border: 1px solid rgba(255,215,0,0.5);
+        }
+        .settings-btn i { margin-right: 5px; }
+        .logout-confirm {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); z-index: 600; display: flex;
+            align-items: center; justify-content: center; opacity: 0;
+            visibility: hidden; transition: 0.3s;
+        }
+        .logout-confirm.active { opacity: 1; visibility: visible; }
+        .logout-card {
+            background: white; border-radius: 30px; padding: 2rem;
+            width: 85%; max-width: 300px; text-align: center;
+            animation: popIn 0.3s ease;
+        }
+        .logout-card h3 { color: #4a5568; margin-bottom: 1rem; }
+        .logout-card p { color: #718096; margin-bottom: 1.5rem; }
+        .logout-buttons { display: flex; gap: 10px; justify-content: center; }
+        .logout-yes { background: #e53e3e; color: white; border: none; padding: 10px 25px; border-radius: 30px; cursor: pointer; font-weight: bold; }
+        .logout-no { background: #a0aec0; color: white; border: none; padding: 10px 25px; border-radius: 30px; cursor: pointer; font-weight: bold; }
+        @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .gacha-header { text-align: center; margin-bottom: 2rem; }
+        .gacha-header h1 { font-family: 'Fredoka One', cursive; font-size: 2.5rem; color: #FFD700; text-shadow: 0 2px 10px rgba(0,0,0,0.3); }
+        .check-rewards-btn { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.5); border-radius: 30px; padding: 8px 15px; color: #FFD700; cursor: pointer; font-size: 0.8rem; }
+        .stats-panel { background: rgba(0,0,0,0.4); border-radius: 30px; padding: 1rem; display: flex; justify-content: space-between; margin-bottom: 2rem; }
+        .stat-item { text-align: center; color: white; }
+        .stat-value { font-size: 1.8rem; font-weight: 700; color: #FFD700; }
+        .stat-label { font-size: 0.7rem; opacity: 0.8; }
+        .gacha-box { background: linear-gradient(145deg, #2a2a3e, #1a1a2e); border-radius: 40px; padding: 2rem; text-align: center; margin-bottom: 2rem; border: 2px solid #FFD700; cursor: pointer; transition: 0.2s; }
+        .gacha-box:active { transform: scale(0.97); }
+        .gacha-icon { font-size: 4rem; animation: pulse 2s infinite; }
+        @keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+        .pull-btn { width: 100%; background: linear-gradient(135deg, #FFD700, #FFA500); border: none; padding: 1rem; border-radius: 40px; font-size: 1.2rem; font-weight: bold; cursor: pointer; margin-bottom: 1rem; }
+        .pull-btn.disabled { opacity: 0.5; pointer-events: none; }
+        .daily-btn { background: rgba(255,255,255,0.1); border: 1px solid #FFD700; padding: 0.8rem; border-radius: 40px; color: #FFD700; font-weight: bold; margin-bottom: 1.5rem; cursor: pointer; text-align: center; }
+        .rewards-panel { background: rgba(0,0,0,0.3); border-radius: 30px; padding: 1rem; margin-bottom: 1rem; }
+        .rewards-header { display: flex; justify-content: space-between; color: #FFD700; margin-bottom: 1rem; }
+        .reward-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(90px,1fr)); gap: 10px; max-height: 250px; overflow-y: auto; }
+        .reward-card { background: rgba(255,255,255,0.1); border-radius: 15px; padding: 8px; text-align: center; }
+        .reward-card i { font-size: 1.5rem; }
+        .reset-btn { background: rgba(255,255,255,0.1); border: none; padding: 5px 12px; border-radius: 20px; color: #aaa; cursor: pointer; font-size: 0.7rem; }
+        .footer { text-align: center; color: #aaa; font-size: 0.7rem; margin-top: 1rem; }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 400; display: flex; align-items: center; justify-content: center; opacity: 0; visibility: hidden; transition: 0.3s; }
+        .modal-overlay.active { opacity: 1; visibility: visible; }
+        .modal-card { background: linear-gradient(145deg, #2a2a3e, #1a1a2e); border-radius: 40px; padding: 1.5rem; width: 85%; max-width: 350px; border: 2px solid #FFD700; text-align: center; }
+        .reward-list { margin: 15px 0; max-height: 300px; overflow-y: auto; }
+        .reward-item { background: rgba(255,255,255,0.05); margin: 5px 0; padding: 8px; border-radius: 15px; display: flex; align-items: center; gap: 10px; }
+        .close-modal-btn { background: #FFD700; border: none; padding: 10px 20px; border-radius: 30px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .result-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 500; display: flex; align-items: center; justify-content: center; opacity: 0; visibility: hidden; transition: 0.3s; }
+        .result-modal.active { opacity: 1; visibility: visible; }
+        .result-card { background: linear-gradient(145deg, #2a2a3e, #1a1a2e); border-radius: 40px; padding: 1.5rem; width: 85%; max-width: 320px; border: 2px solid #FFD700; text-align: center; }
+        .result-icon { font-size: 3rem; }
+        .result-name { font-size: 1.3rem; font-weight: bold; color: #FFD700; margin: 10px 0; }
+        .download-link { display: inline-block; background: #00aaff; color: white; padding: 8px 20px; border-radius: 30px; text-decoration: none; margin-top: 10px; }
+        .close-result { background: #FFD700; border: none; padding: 10px 20px; border-radius: 30px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .toast-msg { position: fixed; bottom: 30px; left: 20px; right: 20px; background: #2d3748; color: white; padding: 12px; border-radius: 15px; text-align: center; z-index: 600; opacity: 0; visibility: hidden; transition: 0.3s; }
+        .toast-msg.show { opacity: 1; visibility: visible; }
+        .game-container { display: none; }
+    </style>
+</head>
+<body>
+
+<!-- AUTH SCREEN -->
+<div class="auth-screen" id="authScreen">
+    <div class="auth-card">
+        <h2 id="authTitle">🔐 LOGIN</h2>
+        <input type="text" id="authUsername" class="auth-input" placeholder="Username" maxlength="20" autocomplete="off">
+        <input type="password" id="authPin" class="auth-input" placeholder="PIN (6 digit)" maxlength="6" inputmode="numeric">
+        <button class="auth-btn" id="authActionBtn">LOGIN</button>
+        <div class="switch-text" id="switchText">Belum punya akun? <span class="switch-link" id="switchMode">Register</span></div>
+        <div id="errorMsg" class="error-msg"></div>
+        <div id="successMsg" class="success-msg"></div>
+    </div>
+</div>
+
+<!-- LOGOUT CONFIRMATION MODAL -->
+<div class="logout-confirm" id="logoutConfirm">
+    <div class="logout-card">
+        <h3>⚠️ Logout</h3>
+        <p>Yakin ingin logout dari akun ini?</p>
+        <div class="logout-buttons">
+            <button class="logout-yes" id="logoutYes">Ya, Logout</button>
+            <button class="logout-no" id="logoutNo">Batal</button>
+        </div>
+    </div>
+</div>
+
+<!-- GAME CONTAINER -->
+<div class="container game-container" id="gameContainer">
+    <div class="settings-btn" id="settingsBtn"><i class="fas fa-user-cog"></i> Pengaturan</div>
+    <div class="gacha-header">
+        <h1>🎁 CONFIG GACHA</h1>
+        <div class="check-rewards-btn" id="checkRewardsBtn">📋 CEK HADIAH</div>
+    </div>
+    <div class="stats-panel">
+        <div class="stat-item"><div class="stat-value" id="pointDisplay">0</div><div class="stat-label">✨ POIN</div></div>
+        <div class="stat-item"><div class="stat-value" id="pullCount">0</div><div class="stat-label">🎲 SPIN</div></div>
+        <div class="stat-item"><div class="stat-value" id="uniqueReward">0</div><div class="stat-label">🏆 CONFIG</div></div>
+    </div>
+    <div class="gacha-box" id="gachaBox">
+        <div class="gacha-icon">🎲</div>
+        <div style="font-weight: bold; margin-top: 10px;">LEGEND SPIN</div>
+        <div style="font-size: 0.8rem; opacity: 0.7;">klik box atau tombol spin (1 poin)</div>
+    </div>
+    <button class="pull-btn" id="pullBtn">🎲 SPIN 1x 🎲</button>
+    <div class="daily-btn" id="dailyBtn">🎁 CLAIM BONUS HARIAN (5 POIN)</div>
+    <div class="rewards-panel">
+        <div class="rewards-header"><span>🏆 KOLEKSI CONFIG</span><button class="reset-btn" id="resetBtn">🗑️ RESET</button></div>
+        <div class="reward-grid" id="rewardGrid"><div style="text-align:center; color:#888; padding:1rem;">belum punya config</div></div>
+    </div>
+    <div class="footer">⚡ setiap spin = 1 poin • raih config legenda!</div>
+</div>
+
+<!-- MODALS -->
+<div id="allRewardsModal" class="modal-overlay">
+    <div class="modal-card">
+        <h3 style="color:#FFD700;">🎁 DAFTAR HADIAH</h3>
+        <div id="allRewardsList" class="reward-list"></div>
+        <button class="close-modal-btn" id="closeRewardsModalBtn">TUTUP</button>
+    </div>
+</div>
+
+<div class="result-modal" id="resultModal">
+    <div class="result-card">
+        <div class="result-icon" id="resultIcon">🎁</div>
+        <div class="result-name" id="resultName"></div>
+        <div class="result-desc" id="resultDesc"></div>
+        <div id="linkContainer"></div>
+        <button class="close-result" id="closeResultBtn">TUTUP</button>
+    </div>
+</div>
+
+<div id="toastMsg" class="toast-msg"></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+<script>
+    // ======================== FIREBASE ========================
+    const firebaseConfig = {
+        databaseURL: "https://daftar-akun-gacha-default-rtdb.asia-southeast1.firebasedatabase.app/"
+    };
+    
+    let db;
+    try {
+        firebase.initializeApp(firebaseConfig);
+        db = firebase.database();
+        console.log("✅ Firebase connected");
+    } catch(e) {
+        console.log("Firebase already initialized");
+        db = firebase.database();
+    }
+
+    // ======================== KONFIGURASI HADIAH (RAHASIA, HANYA 3) ========================
+    const configList = [
+        { id: 1, name: "🎮 Config Ignis", icon: "fa-fire", desc: "Config IGNIS 🔥", requiredSpins: 15, link: "https://sfl.gl/pdAYl", linkText: "📥 DOWNLOAD" },
+        { id: 2, name: "🕶️ Config Bandit", icon: "fa-mask", desc: "Config BANDIT 🕶️", requiredSpins: 15, link: "https://safefileku.com/download/Ybit9vruvC4iGeFY", linkText: "📥 DOWNLOAD" },
+        { id: 3, name: "✨ HOLOGRAM RED", icon: "fa-mask", desc: "HOLOGRAM RED + Black ✨", requiredSpins: 25, link: "https://www.mediafire.com/file/lzgn5vujoeba0sm/HOLO+RED+X+black.zip/file", linkText: "📥 DOWNLOAD HOLOGRAM" }
+    ];
+
+    configList.sort((a, b) => a.requiredSpins - b.requiredSpins);
+
+    const zonkMessages = [
+        { name: "💔 ZONK", icon: "fa-skull", desc: "Yahh zonk! Coba lagi ya 😢" },
+        { name: "🍂 ZONK", icon: "fa-leaf", desc: "Zonk lagi.. Semoga hoki 🍀" },
+        { name: "🥚 ZONK", icon: "fa-egg", desc: "Dapet telur zonk 🗿" }
+    ];
+
+    let currentUser = null;
+    let userDataCache = null;
+
+    function showToast(msg) {
+        const toast = document.getElementById('toastMsg');
+        toast.innerText = msg;
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 2500);
+    }
+
+    function showError(msg) {
+        const errorDiv = document.getElementById('errorMsg');
+        errorDiv.innerText = msg;
+        errorDiv.style.display = 'block';
+        setTimeout(() => errorDiv.style.display = 'none', 3000);
+    }
+
+    function showSuccess(msg) {
+        const successDiv = document.getElementById('successMsg');
+        successDiv.innerText = msg;
+        successDiv.style.display = 'block';
+        setTimeout(() => successDiv.style.display = 'none', 3000);
+    }
+
+    async function register(username, pin) {
+        if (username.length < 3) { showError("Username minimal 3 karakter!"); return false; }
+        if (pin.length !== 6 || isNaN(pin)) { showError("PIN harus 6 digit angka!"); return false; }
+        showToast("⏳ Mendaftarkan...");
+        try {
+            const snapshot = await db.ref(`users/${username}`).once('value');
+            if (snapshot.exists()) { showError("Username sudah dipakai!"); return false; }
+            const newUser = {
+                pin: pin,
+                points: 5,
+                totalSpins: 0,
+                obtainedConfigs: [],
+                lastClaimDate: null,
+                createdAt: new Date().toISOString(),
+                banned: false
+            };
+            await db.ref(`users/${username}`).set(newUser);
+            showSuccess("✅ Registrasi berhasil! Silakan login.");
+            return true;
+        } catch(err) { showError("Error: " + err.message); return false; }
+    }
+
+    async function login(username, pin, silent = false) {
+        if (!username || !pin) { if(!silent) showError("Isi username dan PIN!"); return false; }
+        if (!silent) showToast("⏳ Memverifikasi...");
+        try {
+            const snapshot = await db.ref(`users/${username}`).once('value');
+            if (!snapshot.exists()) { if(!silent) showError("Username tidak ditemukan!"); return false; }
+            const data = snapshot.val();
+            if (data.banned === true) { if(!silent) showError("🚫 AKUN DIBANNED! Hubungi owner."); return false; }
+            if (data.pin !== pin) { if(!silent) showError("PIN salah!"); return false; }
+            currentUser = username;
+            userDataCache = data;
+            localStorage.setItem('gacha_currentUser', username);
+            localStorage.setItem('gacha_currentPin', pin);
+            document.getElementById('authScreen').style.display = 'none';
+            document.getElementById('gameContainer').style.display = 'block';
+            updateUI();
+            if (!silent) showToast(`✨ Selamat datang, ${username}! ✨`);
+            return true;
+        } catch(err) { if(!silent) showError("Koneksi error: " + err.message); return false; }
+    }
+
+    async function logout() {
+        currentUser = null;
+        localStorage.removeItem('gacha_currentUser');
+        localStorage.removeItem('gacha_currentPin');
+        document.getElementById('authScreen').style.display = 'flex';
+        document.getElementById('gameContainer').style.display = 'none';
+        document.getElementById('authUsername').value = '';
+        document.getElementById('authPin').value = '';
+        document.getElementById('logoutConfirm').classList.remove('active');
+        showToast("👋 Berhasil logout!");
+    }
+
+    async function loadUserData() {
+        if (!currentUser) return;
+        try {
+            const snapshot = await db.ref(`users/${currentUser}`).once('value');
+            userDataCache = snapshot.val();
+            if (!userDataCache || userDataCache.banned === true) { logout(); return; }
+            updateUI();
+        } catch(err) { console.error(err); }
+    }
+
+    async function saveUserData(updates) {
+        if (!currentUser) return;
+        await db.ref(`users/${currentUser}`).update(updates);
+        await loadUserData();
+    }
+
+    function updateUI() {
+        if (!userDataCache) return;
+        document.getElementById('pointDisplay').innerText = userDataCache.points || 0;
+        document.getElementById('pullCount').innerText = userDataCache.totalSpins || 0;
+        document.getElementById('uniqueReward').innerText = (userDataCache.obtainedConfigs || []).length;
+        const pullBtn = document.getElementById('pullBtn');
+        if ((userDataCache.points || 0) <= 0) pullBtn.classList.add('disabled');
+        else pullBtn.classList.remove('disabled');
+        renderRewardGrid();
+    }
+
+    function renderRewardGrid() {
+        const grid = document.getElementById('rewardGrid');
+        const obtainedIds = userDataCache.obtainedConfigs || [];
+        const obtained = obtainedIds.map(id => configList.find(c => c.id === id)).filter(c => c);
+        grid.innerHTML = '';
+        if (obtained.length === 0) {
+            grid.innerHTML = '<div style="text-align:center; color:#888; padding:1rem;">✨ belum punya config ✨</div>';
+            return;
+        }
+        obtained.forEach(cfg => {
+            const card = document.createElement('div'); card.className = 'reward-card';
+            card.innerHTML = `<i class="fas ${cfg.icon}"></i><div>${cfg.name}</div>`;
+            grid.appendChild(card);
+        });
+    }
+
+    async function claimDaily() {
+        if (!currentUser) return;
+        const today = new Date().toDateString();
+        if (userDataCache.lastClaimDate === today) { showToast("✨ Kamu sudah claim hari ini!"); return; }
+        const newPoints = (userDataCache.points || 0) + 5;
+        await saveUserData({ points: newPoints, lastClaimDate: today });
+        showToast("🎉 +5 POIN! Selamat bermain 🎉");
+    }
+
+    async function checkAndGiveMilestoneRewards(currentTotalSpins, currentObtained) {
+        let newObtained = [...currentObtained];
+        let addedAny = false;
+        for (const item of configList) {
+            if (!newObtained.includes(item.id) && item.requiredSpins <= currentTotalSpins) {
+                newObtained.push(item.id);
+                addedAny = true;
+                showToast(`🎉 SELAMAT! Kamu mendapatkan ${item.name}! 🎉`);
+                showRewardModalConfig(item);
+                createConfetti();
+            }
+        }
+        if (addedAny) {
+            await saveUserData({ obtainedConfigs: newObtained });
+            return true;
+        }
+        return false;
+    }
+
+    async function performSpin() {
+        if (!currentUser) return;
+        let points = userDataCache.points || 0;
+        if (points <= 0) { showToast("✨ Poin habis! Claim daily bonus ✨"); return; }
+        let newPoints = points - 1;
+        let newTotalSpins = (userDataCache.totalSpins || 0) + 1;
+        let currentObtained = userDataCache.obtainedConfigs || [];
+        await saveUserData({ points: newPoints, totalSpins: newTotalSpins });
+        const gaveReward = await checkAndGiveMilestoneRewards(newTotalSpins, currentObtained);
+        if (!gaveReward) {
+            const zonk = zonkMessages[Math.floor(Math.random() * zonkMessages.length)];
+            document.getElementById('resultIcon').innerHTML = `<i class="fas ${zonk.icon}"></i>`;
+            document.getElementById('resultName').innerText = zonk.name;
+            document.getElementById('resultDesc').innerHTML = `💔 ZONK<br>${zonk.desc}`;
+            document.getElementById('linkContainer').innerHTML = '';
+            document.getElementById('resultModal').classList.add('active');
+            createMiniSpark();
+            showToast("💔 ZONK! Coba lagi.");
+        }
+        animateBox();
+        updateUI();
+    }
+
+    function showRewardModalConfig(config) {
+        document.getElementById('resultIcon').innerHTML = `<i class="fas ${config.icon}"></i>`;
+        document.getElementById('resultName').innerText = config.name;
+        document.getElementById('resultDesc').innerHTML = `🧡 MILESTONE REWARD<br>${config.desc}`;
+        const linkContainer = document.getElementById('linkContainer');
+        linkContainer.innerHTML = '';
+        if(config.link && config.linkText) {
+            const a = document.createElement('a'); a.href = config.link; a.target = '_blank'; a.className = 'download-link';
+            a.innerHTML = `<i class="fas fa-download"></i> ${config.linkText}`;
+            linkContainer.appendChild(a);
+        }
+        document.getElementById('resultModal').classList.add('active');
+    }
+
+    function animateBox() {
+        const box = document.getElementById('gachaBox');
+        box.style.transform = 'scale(0.95)';
+        setTimeout(() => box.style.transform = '', 150);
+    }
+    
+    function createConfetti() {
+        for(let i=0;i<50;i++) {
+            const conf = document.createElement('div');
+            conf.style.cssText = `position:fixed; width:8px; height:8px; background:hsl(${Math.random()*360},100%,60%); border-radius:50%; left:50%; top:50%; pointer-events:none; z-index:1000; animation:confettiFall 0.7s linear forwards`;
+            document.body.appendChild(conf);
+            let x=innerWidth/2, y=innerHeight/2;
+            const angle=Math.random()*Math.PI*2, vel=5+Math.random()*10;
+            const vx=Math.cos(angle)*vel, vy=Math.sin(angle)*vel-5;
+            const interval = setInterval(()=>{ x+=vx; y+=vy; conf.style.left=x+'px'; conf.style.top=y+'px'; if(y>innerHeight+50){ clearInterval(interval); conf.remove(); } },20);
+            setTimeout(()=>{ clearInterval(interval); conf.remove(); },2000);
+        }
+    }
+    
+    function createMiniSpark() {
+        for(let i=0;i<15;i++) {
+            const spark = document.createElement('div');
+            spark.style.cssText = `position:fixed; width:5px; height:5px; background:#aaa; border-radius:50%; left:50%; top:50%; pointer-events:none; z-index:1000; animation:confettiFall 0.5s linear forwards`;
+            document.body.appendChild(spark);
+            let x=innerWidth/2, y=innerHeight/2;
+            const angle=Math.random()*Math.PI*2, vel=3+Math.random()*5;
+            const vx=Math.cos(angle)*vel, vy=Math.sin(angle)*vel-4;
+            const interval = setInterval(()=>{ x+=vx; y+=vy; spark.style.left=x+'px'; spark.style.top=y+'px'; if(y>innerHeight+30){ clearInterval(interval); spark.remove(); } },20);
+            setTimeout(()=>{ clearInterval(interval); spark.remove(); },500);
+        }
+    }
+
+    async function resetCollection() {
+        if(confirm('⚠️ Hapus SEMUA koleksi config? Poin & total spin tetap.')) {
+            await saveUserData({ obtainedConfigs: [] });
+            showToast('✅ Koleksi config direset!');
+            await checkAndGiveMilestoneRewards(userDataCache.totalSpins || 0, []);
+        }
+    }
+
+    function showAllRewards() {
+        const container = document.getElementById('allRewardsList');
+        container.innerHTML = '';
+        // Hanya tampilkan nama dan ikon, tanpa requiredSpins
+        configList.forEach(cfg => {
+            const div = document.createElement('div'); div.className = 'reward-item';
+            div.innerHTML = `<i class="fas ${cfg.icon}"></i><div><strong>${cfg.name}</strong></div>`;
+            container.appendChild(div);
+        });
+        document.getElementById('allRewardsModal').classList.add('active');
+    }
+
+    // ======================== AUTO LOGIN ========================
+    async function autoLogin() {
+        const savedUser = localStorage.getItem('gacha_currentUser');
+        const savedPin = localStorage.getItem('gacha_currentPin');
+        if (savedUser && savedPin) {
+            document.getElementById('authScreen').style.display = 'none';
+            document.getElementById('gameContainer').style.display = 'block';
+            document.getElementById('gameContainer').style.opacity = '0.5';
+            const success = await login(savedUser, savedPin, true);
+            if (success) {
+                document.getElementById('gameContainer').style.opacity = '1';
+            } else {
+                document.getElementById('authScreen').style.display = 'flex';
+                document.getElementById('gameContainer').style.display = 'none';
+                localStorage.removeItem('gacha_currentUser');
+                localStorage.removeItem('gacha_currentPin');
+            }
+        }
+    }
+
+    // ======================== EVENT ========================
+    document.getElementById('pullBtn').addEventListener('click', performSpin);
+    document.getElementById('gachaBox').addEventListener('click', performSpin);
+    document.getElementById('resetBtn').addEventListener('click', resetCollection);
+    document.getElementById('dailyBtn').addEventListener('click', claimDaily);
+    document.getElementById('closeResultBtn').addEventListener('click', () => document.getElementById('resultModal').classList.remove('active'));
+    document.getElementById('checkRewardsBtn').addEventListener('click', showAllRewards);
+    document.getElementById('closeRewardsModalBtn').addEventListener('click', () => document.getElementById('allRewardsModal').classList.remove('active'));
+    
+    document.getElementById('settingsBtn').addEventListener('click', () => {
+        document.getElementById('logoutConfirm').classList.add('active');
+    });
+    document.getElementById('logoutYes').addEventListener('click', logout);
+    document.getElementById('logoutNo').addEventListener('click', () => {
+        document.getElementById('logoutConfirm').classList.remove('active');
+    });
+    
+    let isLogin = true;
+    const authTitle = document.getElementById('authTitle');
+    const authActionBtn = document.getElementById('authActionBtn');
+    const switchText = document.getElementById('switchText');
+    function updateAuthUI() {
+        authTitle.innerText = isLogin ? '🔐 LOGIN' : '📝 REGISTER';
+        authActionBtn.innerText = isLogin ? 'LOGIN' : 'REGISTER';
+        switchText.innerHTML = isLogin ? 'Belum punya akun? <span class="switch-link" id="switchMode">Register</span>' : 'Sudah punya akun? <span class="switch-link" id="switchMode">Login</span>';
+        const switchModeEl = document.getElementById('switchMode');
+        if (switchModeEl) {
+            switchModeEl.addEventListener('click', () => { isLogin = !isLogin; updateAuthUI(); }, { once: true });
+        }
+    }
+    updateAuthUI();
+    authActionBtn.addEventListener('click', async () => {
+        const username = document.getElementById('authUsername').value.trim();
+        const pin = document.getElementById('authPin').value.trim();
+        if (!username || !pin) { showError("Isi semua field!"); return; }
+        if (isLogin) { await login(username, pin, false); } 
+        else { const success = await register(username, pin); if (success) { isLogin = true; updateAuthUI(); document.getElementById('authUsername').value = username; document.getElementById('authPin').value = ''; } }
+    });
+
+    autoLogin();
+
+    const style = document.createElement('style');
+    style.textContent = `@keyframes confettiFall { 0% { transform: translateY(0) rotate(0deg); opacity: 1; } 100% { transform: translateY(100vh) rotate(360deg); opacity: 0; } }`;
+    document.head.appendChild(style);
+    console.log('🔥 GACHA MILESTONE SIAP! Info spin rahasia.');
+</script>
+</body>
+</html>
