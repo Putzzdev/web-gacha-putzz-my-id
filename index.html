@@ -275,7 +275,7 @@
             const snapshot = await db.ref(`users/${username}`).once('value');
             if (!snapshot.exists()) { if(!silent) showError("Username tidak ditemukan!"); return false; }
             const data = snapshot.val();
-            if (data.banned === true) { if(!silent) showError("🚫 AKUN DIBANNED! Hubungi owner."); return false; }
+            if (data.banned === true) { if(!silent) showError("🚫 AKUN DIBANNED!alasan username tidak pantas."); return false; }
             if (data.pin !== pin) { if(!silent) showError("PIN salah!"); return false; }
             currentUser = username;
             userDataCache = data;
